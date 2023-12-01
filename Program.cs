@@ -8,9 +8,9 @@ using Microsoft.Extensions.Options;
 
 namespace MMC;
 
-public class MyDbContext : DbContext
+public class MyDbContext : DbContext 
 {
-    public MyDbContext(DbContextOptions<MyDbContext> options) : base(options) { }
+    public MyDbContext(DbContextOptions<MyDbContext> options) : base(options) { } //SRP of solid principle, MyDbcontext is only for handling database executions.
 
     public List<string?> GetEntities<T>(string propertyName) where T : class
     {
@@ -72,13 +72,12 @@ public class MyDbContext : DbContext
     }
     // The following configures EF to create a Sqlite database file in the
     // special "local" folder for your platform.
-    protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source = C:\\Users\\15025\\OneDrive\\Desktop\\Documents\\Code\\Capstone-Project\\MoldMakingCalculator\\MMC.db");
-   }
+   
+   } 
 
 
 
-public class Cube //class for dynamic data of 3D object to be molded
+public class Cube //Only contains classes and methods pertaining to the creation of cuboid molds, OCP
 
 {
 
@@ -99,9 +98,9 @@ public class Cube //class for dynamic data of 3D object to be molded
         return Height1 * Width1 * Length1;
     }
 
-}
+} 
 
-public class Cylinder //class for dynamic data of 3D object to be molded
+public class Cylinder //Only contains classes and methods pertaining to the creation of cuboid molds
 {
     public string? Projectname2 { get; set; }
     public double Height2 { get; set; }
@@ -113,9 +112,9 @@ public class Cylinder //class for dynamic data of 3D object to be molded
     public double Water2 { get; set; }
 
     public double Plaster2 { get; set; }
-}
+} 
 
-public class Sphere //class for dynamic data of 3D object to be molded
+public class Sphere //Only contains classes and methods pertaining to the creation of cuboid molds
 {
     public string? Projectname3 { get; set; }
     public double Radius3 { get; set; }
@@ -127,9 +126,9 @@ public class Sphere //class for dynamic data of 3D object to be molded
     public double Water3 { get; set; }
 
     public double Plaster3 { get; set; }
-}
+}  
 
-public class Pyramid //class for dynamic data of 3D object to be molded
+public class Pyramid //Only contains classes and methods pertaining to the creation of cuboid molds
 {
     public string? Projectname4 { get; set; }
     public double Height4 { get; set; }
@@ -155,11 +154,11 @@ public class PlasterConstant
 
 public class ProgramCalculator1
 {
-    private static readonly MyDbContext dbcontext = new ();
-    static void Main()
+    public static readonly MyDbContext dbcontext = new ();
+    public static async Task Main(string[] args)
     {
 
-        using var dbContext = new MyDbContext(new DbContextOptions<MyDbContext>());
+        using var dbContext = new MyDbContext();
         
 
         string userInput;
@@ -221,7 +220,7 @@ public class ProgramCalculator1
 
                     Console.WriteLine($"and {plaster1} pounds of plaster.");
 
-                    SaveChangesToDatabase(dbcontext);
+                    await SaveChangesToDatabaseAsync(dbContext);
 
                     Console.WriteLine("Would you like to see the full list of project names in the cube category?");
 
@@ -290,7 +289,7 @@ public class ProgramCalculator1
 
                     Console.WriteLine($"and {resultp2} pounds of plaster.");
 
-                    SaveChangesToDatabase(dbcontext);
+                    await SaveChangesToDatabaseAsync(dbContext);
 
                     var allCylinders = dbcontext.GetAllCylinders();
                     foreach (var retreivedCylinder in allCylinders)
@@ -342,7 +341,7 @@ public class ProgramCalculator1
 
                     Console.WriteLine($"and {resultp3} pounds of plaster.");
 
-                    SaveChangesToDatabase(dbcontext);
+                    await SaveChangesToDatabaseAsync(dbContext);
 
                     var allSpheres = dbcontext.GetAllSpheres();
                     foreach (var retreivedSpheres in allSpheres)
@@ -395,7 +394,7 @@ public class ProgramCalculator1
 
                     Console.WriteLine($"and {resultp4} pounds of plaster.");
 
-                    SaveChangesToDatabase(dbcontext);
+                    await SaveChangesToDatabaseAsync(dbContext);
 
                     var allPyramids = dbcontext.GetAllPyramids();
                     foreach (var retreivedPyramids in allPyramids)
@@ -419,7 +418,7 @@ public class ProgramCalculator1
     }
 
 
-    static void SaveChangesToDatabase(MyDbContext dbContext)
+    static async Task SaveChangesToDatabaseAsync (MyDbContext dbContext)
     {
         Console.WriteLine("Enter 'confirm' to save changes to the database:");
         var confirmation = Console.ReadLine();
@@ -428,7 +427,7 @@ public class ProgramCalculator1
         {
             try
             {
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
                 Console.WriteLine("Changes saved to the database.");
             }
             catch (Exception ex)
