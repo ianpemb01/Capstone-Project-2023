@@ -12,24 +12,45 @@ public class MyDbContext : DbContext
 {
     public MyDbContext(DbContextOptions<MyDbContext> options) : base(options) { }
 
-    public MyDbContext()
+    public List<string?> GetEntities<T>(string propertyName) where T : class
     {
+        return [.. Set<T>().Select(entity => entity.GetType().GetProperty(propertyName)!.GetValue(entity)!.ToString()).ToList()];
     }
 
-    public static void SetSqliteFileOptions(DbContextOptionsBuilder<MyDbContext> optionsBuilder, string fileName)
-        {
-            var connectionString = $"Data Source={fileName}.db";
-            optionsBuilder.UseSqlite(connectionString);
-        }
-        public DbSet<Cube> Cubes { get; set; }
+    public MyDbContext()
+    {
+        
+    }
 
-        public DbSet<Cylinder> Cylinders { get; set; }
+    public List<Cube> GetAllCubes()
+    {
+        return [.. Cubes];
+    }
 
-        public DbSet<Sphere> Spheres { get; set; }
+    public List<Cylinder> GetAllCylinders()
+    {
+        return [.. Cylinders];
+    }
 
-        public DbSet<Pyramid> Pyramids { get; set; }
+    public List<Sphere> GetAllSpheres()
+    {
+        return [.. Spheres];
+    }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder) //Defines the project names as Primary Keys
+    public List<Pyramid> GetAllPyramids()
+    {
+        return [.. Pyramids];
+    }
+
+    public DbSet<Cube> Cubes { get; set; }
+    
+    public DbSet<Cylinder> Cylinders { get; set; }
+
+    public DbSet<Sphere> Spheres { get; set; }
+
+    public DbSet<Pyramid> Pyramids { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) //Defines the project names as Primary Keys
         {
             modelBuilder.Entity<Cube>().HasKey(c => c.Projectname1);
             modelBuilder.Entity<Cylinder>().HasKey(c => c.Projectname2);
@@ -40,23 +61,22 @@ public class MyDbContext : DbContext
             base.OnModelCreating(modelBuilder);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public static string DbPath
+    {
+        get
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                
-                var fileName = "default_file_name"; 
-                SetSqliteFileOptions(optionsBuilder, fileName);
-            }
-
-            base.OnConfiguring(optionsBuilder);
+            const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
+            var path = Environment.GetFolderPath(folder);
+            return Path.Join(path, "C:\\Users\\15025\\OneDrive\\Desktop\\Documents\\Code\\Capstone-Project\\MoldMakingCalculator\\MMC.db");
         }
-
-        private static void SetSqliteFileOptions(DbContextOptionsBuilder optionsBuilder, string fileName)
-        {
-            throw new NotImplementedException();
-        }
+    }
+    // The following configures EF to create a Sqlite database file in the
+    // special "local" folder for your platform.
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+        => options.UseSqlite($"Data Source = C:\\Users\\15025\\OneDrive\\Desktop\\Documents\\Code\\Capstone-Project\\MoldMakingCalculator\\MMC.db");
    }
+
+
 
 public class Cube //class for dynamic data of 3D object to be molded
 
@@ -74,6 +94,10 @@ public class Cube //class for dynamic data of 3D object to be molded
 
     public double Plaster1 { get; set; }
 
+    public double CalculateVolume()
+    {
+        return Height1 * Width1 * Length1;
+    }
 
 }
 
@@ -119,29 +143,34 @@ public class Pyramid //class for dynamic data of 3D object to be molded
     public double Plaster4 { get; set; }
 }
 
+public class WaterConstant
+{
+    public const int water = 80;
+}
+
+public class PlasterConstant
+{
+    public const int plaster = 3;
+}
+
 public class ProgramCalculator1
 {
     private static readonly MyDbContext dbcontext = new ();
     static void Main()
     {
 
-        {
+        using var dbContext = new MyDbContext(new DbContextOptions<MyDbContext>());
+        
 
-            Console.WriteLine("Enter a file name to create or use an existing SQLite database:");
-            var fileName = Console.ReadLine()!;
-
-
-            var optionsBuilder = new DbContextOptionsBuilder<MyDbContext>();
-            MyDbContext.SetSqliteFileOptions(optionsBuilder, fileName);
-
-            using var dbContext = new MyDbContext(optionsBuilder.Options);
-        }
-
-        string? userInput;
+        string userInput;
         do
         {
             Console.WriteLine("________________");
-            Console.WriteLine("Hello.");
+            Console.WriteLine("Hello.Please pick the base shape of the object you would like to mold.");
+            Console.WriteLine("One for cube");
+            Console.WriteLine("Two for cylinder");
+            Console.WriteLine("Three for sphere");
+            Console.WriteLine("Four for pyramid");
             Console.WriteLine(1);
             Console.WriteLine(2);
             Console.WriteLine(3);
@@ -171,9 +200,6 @@ public class ProgramCalculator1
 
                     Console.WriteLine("Enter the Height, Width, Length");
 
-                    int water = 80;
-                    int plaster = 3;
-
                     double Height1 = Convert.ToDouble(Console.ReadLine());
                     cube.Height1 = Height1;
 
@@ -183,19 +209,44 @@ public class ProgramCalculator1
                     double Length1 = Convert.ToDouble(Console.ReadLine());
                     cube.Length1 = Length1;
 
-                    double result1 = Height1 * Width1 * Length1;
-                    double resultw1 = result1 / water;
-                    cube.Water1 = resultw1;
-                    double resultp1 = Math.Round(resultw1) * plaster;
-                    cube.Plaster1 = resultp1;
+                    double volume1 = cube.CalculateVolume();
+                    double water1 = volume1 / WaterConstant.water;
+                    cube.Water1 = water1;
+                    double plaster1 = Math.Round(water1) * PlasterConstant.plaster;
+                    cube.Plaster1 = plaster1;
 
-                    Console.WriteLine($" {Height1}*{Width1}*{Length1} = {result1} cubic inches ");
+                    Console.WriteLine($" {Height1}*{Width1}*{Length1} = {volume1} cubic inches ");
 
-                    Console.WriteLine($"You will need {resultw1} quarts of water");
+                    Console.WriteLine($"You will need {water1} quarts of water");
 
-                    Console.WriteLine($"and {resultp1} pounds of plaster.");
+                    Console.WriteLine($"and {plaster1} pounds of plaster.");
 
                     SaveChangesToDatabase(dbcontext);
+
+                    Console.WriteLine("Would you like to see the full list of project names in the cube category?");
+
+                    userInput = Console.ReadLine()!.ToUpper();
+
+                    if (userInput == "Y")
+                    {
+                        var projectNameList = dbContext.GetEntities<Cube>("ProjectName1");
+
+                        foreach (var projectName in projectNameList)
+                        {
+                            Console.WriteLine($"{projectName}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Okay, not showing the list.");
+                    }
+
+                    var allCubes = dbcontext.GetAllCubes();
+                    foreach (var retreivedCube in allCubes)
+
+                    {
+                        Console.WriteLine($"Cube: Project Name - {cube.Projectname1}, Water amount - {cube.Water1} quarts of water, Plaster amount - {cube.Plaster1} pounds of plaster");
+                    }
 
                     break;
 
@@ -216,8 +267,6 @@ public class ProgramCalculator1
                         Console.WriteLine("You must enter a project name too continue.");
                     }
 
-                    const int water2 = 80;
-                    const int plaster2 = 3;
                     const double pi2 = double.Pi;
 
                     Console.WriteLine("Enter the Height, Radius");
@@ -230,9 +279,9 @@ public class ProgramCalculator1
 
                     double area = radius2 * radius2;
                     double result2 = height2 * area * pi2;
-                    double resultw2 = result2 / water2;
+                    double resultw2 = result2 / WaterConstant.water;
                     cylinder.Water2 = resultw2;
-                    double resultp2 = Math.Round(resultw2) * plaster2;
+                    double resultp2 = Math.Round(resultw2) * PlasterConstant.plaster;
                     cylinder.Plaster2 = resultp2;
 
                     Console.WriteLine($" {height2} * {area} * {pi2} = {result2} cubic inches ");
@@ -242,6 +291,13 @@ public class ProgramCalculator1
                     Console.WriteLine($"and {resultp2} pounds of plaster.");
 
                     SaveChangesToDatabase(dbcontext);
+
+                    var allCylinders = dbcontext.GetAllCylinders();
+                    foreach (var retreivedCylinder in allCylinders)
+
+                    {
+                        Console.WriteLine($"Cube: Project Name - {cylinder.Projectname2}, Water amount - {cylinder.Water2} quarts of water, Plaster amount - {cylinder.Plaster2} pounds of plaster");
+                    }
 
                     break;
 
@@ -263,8 +319,6 @@ public class ProgramCalculator1
                         Console.WriteLine("You must enter a project name too continue.");
                     }
 
-                    const double water3 = 80;
-                    const double plaster3 = 3;
                     const double pi3 = double.Pi;
                     const double constant3 = 4.0 / 3;
 
@@ -276,10 +330,10 @@ public class ProgramCalculator1
                     double area3 = radius3 * radius3;
                     double result3 = area3 * pi3 * constant3;
 
-                    double resultw3 = result3 / water3;
+                    double resultw3 = result3 / WaterConstant.water;
                     sphere.Water3 = resultw3;
 
-                    double resultp3 = Math.Round(resultw3) * plaster3;
+                    double resultp3 = Math.Round(resultw3) * PlasterConstant.plaster;
                     sphere.Plaster3 = resultp3;
 
                     Console.WriteLine($" {area3} * {pi3} * {constant3} = {result3} cubic inches ");
@@ -289,6 +343,13 @@ public class ProgramCalculator1
                     Console.WriteLine($"and {resultp3} pounds of plaster.");
 
                     SaveChangesToDatabase(dbcontext);
+
+                    var allSpheres = dbcontext.GetAllSpheres();
+                    foreach (var retreivedSpheres in allSpheres)
+
+                    {
+                        Console.WriteLine($"Cube: Project Name - {sphere.Projectname3}, Water amount - {sphere.Water3} quarts of water, Plaster amount - {sphere.Plaster3} pounds of plaster");
+                    }
 
                     break;
 
@@ -309,9 +370,6 @@ public class ProgramCalculator1
                         Console.WriteLine("You must enter a project name too continue.");
                     }
 
-                    int water4 = 80;
-                    int plaster4 = 3;
-
                     Console.WriteLine("Enter the Height, Width, Length");
 
                     double height4 = Convert.ToDouble(Console.ReadLine());
@@ -325,10 +383,10 @@ public class ProgramCalculator1
 
                     double result4 = height4 * width4 * length4;
 
-                    double resultw4 = result4 / water4;
+                    double resultw4 = result4 / WaterConstant.water;
                     pyramid.Water4 = resultw4;
 
-                    double resultp4 = Math.Round(resultw4) * plaster4;
+                    double resultp4 = Math.Round(resultw4) * PlasterConstant.plaster;
                     pyramid.Plaster4 = resultp4;
 
                     Console.WriteLine($" {height4} * {width4} * {length4} = {result4} cubic inches ");
@@ -339,6 +397,13 @@ public class ProgramCalculator1
 
                     SaveChangesToDatabase(dbcontext);
 
+                    var allPyramids = dbcontext.GetAllPyramids();
+                    foreach (var retreivedPyramids in allPyramids)
+
+                    {
+                        Console.WriteLine($"Cube: Project Name - {pyramid.Projectname4}, Water amount - {pyramid.Water4} quarts of water, Plaster amount - {pyramid.Plaster4} pounds of plaster");
+                    }
+
                     break;
 
                 default:
@@ -346,7 +411,7 @@ public class ProgramCalculator1
                     break;
             }
             Console.WriteLine("Save or Continue? (Y = yes, N = No, Save = Save Project):");
-            userInput = Console.ReadLine();
+            userInput = Console.ReadLine()!;
 
         } while (userInput?.ToUpper() == "Y");
 
@@ -371,12 +436,9 @@ public class ProgramCalculator1
                 Console.WriteLine($"Error saving changes: {ex.Message}");
             }
         }
-        else
-        {
-            Console.WriteLine("Changes were not saved. No confirmation provided.");
-        }
     }
 }
+
 
 
 
