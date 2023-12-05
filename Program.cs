@@ -117,7 +117,7 @@ public class Sphere //Only contains classes and methods pertaining to the creati
     public string? Projectname3 { get; set; }
     public double Radius3 { get; set; }
 
-    public const double S = 4 / 3;
+    public const double S = 4.0 / 3;
 
     public const double P = double.Pi;
 
