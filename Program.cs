@@ -100,7 +100,7 @@ public class Cube //Only contains classes and methods pertaining to the creation
 
 } 
 
-public class Cylinder //Only contains classes and methods pertaining to the creation of cuboid molds
+public class Cylinder //Only contains classes and methods pertaining to the creation of cylinder molds
 {
     public string? Projectname2 { get; set; }
     public double Height2 { get; set; }
@@ -114,7 +114,7 @@ public class Cylinder //Only contains classes and methods pertaining to the crea
     public double Plaster2 { get; set; }
 } 
 
-public class Sphere //Only contains classes and methods pertaining to the creation of cuboid molds
+public class Sphere //Only contains classes and methods pertaining to the creation of sphere molds
 {
     public string? Projectname3 { get; set; }
     public double Radius3 { get; set; }
@@ -128,7 +128,7 @@ public class Sphere //Only contains classes and methods pertaining to the creati
     public double Plaster3 { get; set; }
 }  
 
-public class Pyramid //Only contains classes and methods pertaining to the creation of cuboid molds
+public class Pyramid //Only contains classes and methods pertaining to the creation of pyramid molds
 {
     public string? Projectname4 { get; set; }
     public double Height4 { get; set; }
