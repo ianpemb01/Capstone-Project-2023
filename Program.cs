@@ -70,11 +70,9 @@ public class MyDbContext : DbContext
             return Path.Join(path, "MMC.db");
         }
     }
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite($"Data Source={DbPath}");
-   
-   } 
-
+}
 
 
 public class Cube //Only contains classes and methods pertaining to the creation of cuboid molds, OCP
@@ -100,7 +98,7 @@ public class Cube //Only contains classes and methods pertaining to the creation
 
 } 
 
-public class Cylinder //Only contains classes and methods pertaining to the creation of cylinder molds
+public class Cylinder //Only contains classes and methods pertaining to the creation of cuboid molds
 {
     public string? Projectname2 { get; set; }
     public double Height2 { get; set; }
@@ -114,7 +112,7 @@ public class Cylinder //Only contains classes and methods pertaining to the crea
     public double Plaster2 { get; set; }
 } 
 
-public class Sphere //Only contains classes and methods pertaining to the creation of sphere molds
+public class Sphere //Only contains classes and methods pertaining to the creation of cuboid molds
 {
     public string? Projectname3 { get; set; }
     public double Radius3 { get; set; }
@@ -128,7 +126,7 @@ public class Sphere //Only contains classes and methods pertaining to the creati
     public double Plaster3 { get; set; }
 }  
 
-public class Pyramid //Only contains classes and methods pertaining to the creation of pyramid molds
+public class Pyramid //Only contains classes and methods pertaining to the creation of cuboid molds
 {
     public string? Projectname4 { get; set; }
     public double Height4 { get; set; }
@@ -154,12 +152,12 @@ public class PlasterConstant
 
 public class ProgramCalculator1
 {
-    public static readonly MyDbContext dbcontext = new ();
-    public static async Task Main(string[] args)
+    
+    public static async Task Main()
     {
 
         using var dbContext = new MyDbContext();
-        dbcontext.Database.EnsureCreated();
+        dbContext.Database.EnsureCreated();
 
         string userInput;
         do
@@ -220,7 +218,9 @@ public class ProgramCalculator1
 
                     Console.WriteLine($"and {plaster1} pounds of plaster.");
 
-                    await SaveChangesToDatabaseAsync(dbContext);
+                    dbContext.Cubes.Add( cube );
+
+                    await dbContext.SaveChangesAsync();
 
                     Console.WriteLine("Would you like to see the full list of project names in the cube category?");
 
@@ -228,7 +228,7 @@ public class ProgramCalculator1
 
                     if (userInput == "Y")
                     {
-                        var projectNameList = dbContext.GetEntities<Cube>("ProjectName1");
+                        var projectNameList = dbContext.Cubes.Select(cube=>cube.Projectname1);
 
                         foreach (var projectName in projectNameList)
                         {
@@ -240,11 +240,11 @@ public class ProgramCalculator1
                         Console.WriteLine("Okay, not showing the list.");
                     }
 
-                    var allCubes = dbcontext.GetAllCubes();
+                    var allCubes = dbContext.GetAllCubes();
                     foreach (var retreivedCube in allCubes)
 
                     {
-                        Console.WriteLine($"Cube: Project Name - {cube.Projectname1}, Water amount - {cube.Water1} quarts of water, Plaster amount - {cube.Plaster1} pounds of plaster");
+                        Console.WriteLine($"Cube: Project Name - {retreivedCube.Projectname1}, Water amount - {retreivedCube.Water1} quarts of water, Plaster amount - {retreivedCube.Plaster1} pounds of plaster");
                     }
 
                     break;
@@ -289,13 +289,15 @@ public class ProgramCalculator1
 
                     Console.WriteLine($"and {resultp2} pounds of plaster.");
 
-                    await SaveChangesToDatabaseAsync(dbContext);
+                    dbContext.Cylinders.Add( cylinder );
 
-                    var allCylinders = dbcontext.GetAllCylinders();
+                    await dbContext.SaveChangesAsync();
+
+                    var allCylinders = dbContext.GetAllCylinders();
                     foreach (var retreivedCylinder in allCylinders)
 
                     {
-                        Console.WriteLine($"Cube: Project Name - {cylinder.Projectname2}, Water amount - {cylinder.Water2} quarts of water, Plaster amount - {cylinder.Plaster2} pounds of plaster");
+                        Console.WriteLine($"Cube: Project Name - {retreivedCylinder.Projectname2}, Water amount - {retreivedCylinder.Water2} quarts of water, Plaster amount - {retreivedCylinder.Plaster2} pounds of plaster");
                     }
 
                     break;
@@ -341,13 +343,15 @@ public class ProgramCalculator1
 
                     Console.WriteLine($"and {resultp3} pounds of plaster.");
 
-                    await SaveChangesToDatabaseAsync(dbContext);
+                    dbContext.Spheres.Add(sphere);
 
-                    var allSpheres = dbcontext.GetAllSpheres();
+                    await dbContext.SaveChangesAsync();
+
+                    var allSpheres = dbContext.GetAllSpheres();
                     foreach (var retreivedSpheres in allSpheres)
 
                     {
-                        Console.WriteLine($"Cube: Project Name - {sphere.Projectname3}, Water amount - {sphere.Water3} quarts of water, Plaster amount - {sphere.Plaster3} pounds of plaster");
+                        Console.WriteLine($"Cube: Project Name - {retreivedSpheres.Projectname3}, Water amount - {retreivedSpheres.Water3} quarts of water, Plaster amount - {retreivedSpheres.Plaster3} pounds of plaster");
                     }
 
                     break;
@@ -394,13 +398,15 @@ public class ProgramCalculator1
 
                     Console.WriteLine($"and {resultp4} pounds of plaster.");
 
-                    await SaveChangesToDatabaseAsync(dbContext);
+                    dbContext.Pyramids.Add(pyramid);
 
-                    var allPyramids = dbcontext.GetAllPyramids();
+                    await dbContext.SaveChangesAsync();
+
+                    var allPyramids = dbContext.GetAllPyramids();
                     foreach (var retreivedPyramids in allPyramids)
 
                     {
-                        Console.WriteLine($"Cube: Project Name - {pyramid.Projectname4}, Water amount - {pyramid.Water4} quarts of water, Plaster amount - {pyramid.Plaster4} pounds of plaster");
+                        Console.WriteLine($"Cube: Project Name - {retreivedPyramids.Projectname4}, Water amount - {retreivedPyramids.Water4} quarts of water, Plaster amount - {retreivedPyramids.Plaster4} pounds of plaster");
                     }
 
                     break;
@@ -409,7 +415,7 @@ public class ProgramCalculator1
                     Console.WriteLine("Unkwon input");
                     break;
             }
-            Console.WriteLine("Save or Continue? (Y = yes, N = No, Save = Save Project):");
+            Console.WriteLine("Type Y to continue. (Y = yes):");
             userInput = Console.ReadLine()!;
 
         } while (userInput?.ToUpper() == "Y");
@@ -418,24 +424,6 @@ public class ProgramCalculator1
     }
 
 
-    static async Task SaveChangesToDatabaseAsync (MyDbContext dbContext)
-    {
-        Console.WriteLine("Enter 'confirm' to save changes to the database:");
-        var confirmation = Console.ReadLine();
-
-        if (confirmation?.ToLower() == "confirm")
-        {
-            try
-            {
-                await dbContext.SaveChangesAsync();
-                Console.WriteLine("Changes saved to the database.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error saving changes: {ex.Message}");
-            }
-        }
-    }
 }
 
 
