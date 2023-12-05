@@ -67,7 +67,7 @@ public class MyDbContext : DbContext
         {
             const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
             var path = Environment.GetFolderPath(folder);
-            return Path.Join(path, "C:\\Users\\15025\\OneDrive\\Desktop\\Documents\\Code\\Capstone-Project\\MoldMakingCalculator\\MMC.db");
+            return Path.Join(path, "MMC.db");
         }
     }
     // The following configures EF to create a Sqlite database file in the
