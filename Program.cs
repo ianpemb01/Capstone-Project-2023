@@ -159,7 +159,7 @@ public class ProgramCalculator1
     {
 
         using var dbContext = new MyDbContext();
-        
+        dbcontext.Database.EnsureCreated();
 
         string userInput;
         do
