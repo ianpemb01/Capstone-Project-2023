@@ -196,12 +196,17 @@ public class ProgramCalculator1
                     }
 
                     Console.WriteLine("Enter the Height, Width, Length");
+                    Console.Write("Height: ");
 
                     double Height1 = Convert.ToDouble(Console.ReadLine());
                     cube.Height1 = Height1;
 
+                    Console.Write("Width: ");
+
                     double Width1 = Convert.ToDouble(Console.ReadLine());
                     cube.Width1 = Width1;
+
+                    Console.Write("Length: ");
 
                     double Length1 = Convert.ToDouble(Console.ReadLine());
                     cube.Length1 = Length1;
@@ -222,7 +227,7 @@ public class ProgramCalculator1
 
                     await dbContext.SaveChangesAsync();
 
-                    Console.WriteLine("Would you like to see the full list of project names in the cube category?");
+                    Console.WriteLine("Would you like to see the full list of project names in the cube category?(Y = Yes)");
 
                     userInput = Console.ReadLine()!.ToUpper();
 
@@ -269,9 +274,12 @@ public class ProgramCalculator1
                     const double pi2 = double.Pi;
 
                     Console.WriteLine("Enter the Height, Radius");
+                    Console.Write("Height: ");
 
                     double height2 = Convert.ToDouble(Console.ReadLine());
                     cylinder.Height2 = height2;
+
+                    Console.Write("Radius: ");
 
                     double radius2 = Convert.ToDouble(Console.ReadLine());
                     cylinder.Radius2 = radius2;
@@ -325,6 +333,8 @@ public class ProgramCalculator1
 
                     Console.WriteLine("Enter the Radius");
 
+                    Console.Write("Radius: ");
+
                     double radius3 = Convert.ToDouble(Console.ReadLine());
                     sphere.Radius3 = radius3;
 
@@ -374,12 +384,17 @@ public class ProgramCalculator1
                     }
 
                     Console.WriteLine("Enter the Height, Width, Length");
+                    Console.Write("Height: ");
 
                     double height4 = Convert.ToDouble(Console.ReadLine());
                     pyramid.Height4 = height4;
 
+                    Console.Write("Width: ");
+
                     double width4 = Convert.ToDouble(Console.ReadLine());
                     pyramid.Width4 = width4;
+
+                    Console.Write("Length: ");
 
                     double length4 = Convert.ToDouble(Console.ReadLine());
                     pyramid.Length4 = length4;
